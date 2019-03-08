@@ -7,7 +7,6 @@ import org.atmecs.falconanalytics.dto.ProductTestReport;
 import org.atmecs.falconanalytics.dto.ProductTestResponse;
 import org.atmecs.falconanalytics.properties.TestReportProperties;
 import org.atmecs.falconanalytics.repositories.ProductTestReportRepository;
-//import org.atmecs.falconanalytics.utilities.PropertyParser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -46,19 +45,20 @@ public class ProductTestReportController {
 	
 	//method to return test pass percent array and corresponding run session id array for analytics purpose
 	@GetMapping("/getDetails")
-	public ProductTestIdPercent analysis(@RequestParam("productName") String productName ) {
+	public ProductTestIdPercent analysis(@RequestParam("productName") String productName,@RequestParam("noOfRuns") int noOfRuns ) {
 
 		List<ProductTestReport> testReportsDetails= testReportRepository.findByProductnameOrderByRunsessionidDesc(productName);
 		Iterator<ProductTestReport> reports = testReportsDetails.iterator();
-		int testPassPercent[]=new int[properties.getNoOfResults()];
-		int testRunId[]=new int[properties.getNoOfResults()];
+		int testPassPercent[]=new int[noOfRuns];
+		int testRunId[]=new int[noOfRuns];
 		int position=0;
 		ProductTestReport productTestReport;
-		while (reports.hasNext() && position<properties.getNoOfResults()) {
+		while (reports.hasNext() && noOfRuns>0) {
 			productTestReport=reports.next();
 			testPassPercent[position]=productTestReport.getPasspercentage();
 			testRunId[position]=productTestReport.getRunsessionid();
 			position++;
+			noOfRuns--;
 		}
 		return new ProductTestIdPercent(testPassPercent,testRunId);
 	}

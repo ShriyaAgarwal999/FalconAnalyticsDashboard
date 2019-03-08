@@ -9,7 +9,7 @@ public class TestReportProperties {
 	private String noMessage="Not Ready for deployment";
 	private int smokePassPercent=95;
 	private int regressionPassPercent=95;
-	private int noOfResults=5;
+	private int noOfTestcases=5;
 	
 	public String getGoMessage() {
 		return goMessage;
@@ -43,12 +43,13 @@ public class TestReportProperties {
 		this.regressionPassPercent = regressionPassPercent;
 	}
 
-	public int getNoOfResults() {
-		return noOfResults;
+	public int getNoOfTestcases() {
+		return noOfTestcases;
 	}
 
-	public void setNoOfResults(int noOfResults) {
-		this.noOfResults = noOfResults;
+	public void setNoOfTestcases(int noOfTestcases) {
+		this.noOfTestcases = noOfTestcases;
 	}
+	
 
 }

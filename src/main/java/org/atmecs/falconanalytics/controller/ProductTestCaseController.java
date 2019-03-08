@@ -1,14 +1,17 @@
 package org.atmecs.falconanalytics.controller;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import org.atmecs.falconanalytics.dto.ProductTestCase;
+import org.atmecs.falconanalytics.dto.TestcaseDetails;
+import org.atmecs.falconanalytics.properties.TestReportProperties;
 import org.atmecs.falconanalytics.repositories.ProductTestCaseRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -18,12 +21,65 @@ public class ProductTestCaseController {
 	@Autowired
 	ProductTestCaseRepository testcaseRepo; 
 	
+	@Autowired
+	TestReportProperties properties;
+	
+	//function to get data of last runs
 	@GetMapping("/details")
-	public ProductTestCase history(@PathVariable("customerName") String customerName)
-	{
-		List<ProductTestCase> testcaseModel=new ArrayList<>();
-		
-		return null;
+	public List<TestcaseDetails> history(@RequestParam("customerName") String customerName, @RequestParam("noOfRuns") int noOfRuns){
+		int skip=1;
+		List<ProductTestCase> testcaseModel=testcaseRepo.findByCustomernameOrderByNumberDesc(customerName);
+		Iterator<ProductTestCase> reports = testcaseModel.iterator();
+		ProductTestCase productTestCase;
+		//int temp=properties.getNoOfTestcases()-noOfRuns;
+		List<TestcaseDetails> listOfTestcase=new ArrayList<TestcaseDetails>();
+		while (reports.hasNext()){
+			productTestCase=reports.next();
+			if(skip>properties.getNoOfTestcases()-noOfRuns) {
+				TestcaseDetails testcaseDetails = new TestcaseDetails();
+				testcaseDetails.setName(productTestCase.getName());
+				testcaseDetails.setRunsessionid(productTestCase.getRunsessionid());
+				testcaseDetails.setStatus(productTestCase.getStatus());
+				testcaseDetails.setExceptionmessage(productTestCase.getExceptionmessage());
+				testcaseDetails.setNumber(productTestCase.getNumber());
+				listOfTestcase.add(testcaseDetails);	
+			}
+			skip++;
+			if(skip>properties.getNoOfTestcases())
+				skip=1;
+		}
+		System.out.println(listOfTestcase.toString());
+		return listOfTestcase;
+	}
+	
+	//function to get the comparision test case wise
+	@GetMapping("/testcaseCompare")
+	public double[] testcaseCompare(@RequestParam("customerName") String customerName, @RequestParam("noOfRuns") int noOfRuns) {
+		List<ProductTestCase> testcaseModel=testcaseRepo.findByCustomernameOrderByRunsessionidDesc(customerName);
+		Iterator<ProductTestCase> reports = testcaseModel.iterator();
+		ProductTestCase productTestCase;
+		int noOfResults=noOfRuns*properties.getNoOfTestcases();
+		String allPassPercent[]=new String[noOfResults];
+		double testcasePassPercent[]=new double[properties.getNoOfTestcases()];
+		int position=0,loop;
+		double pass;
+		while (reports.hasNext() && noOfResults>0){
+			productTestCase=reports.next();
+			allPassPercent[position++]=productTestCase.getStatus();
+			noOfResults--;
+		}
+		for(noOfResults=0;noOfResults<properties.getNoOfTestcases();noOfResults++)
+		{
+			pass=0.0;
+			position=noOfResults;
+			for(loop=0;loop<noOfRuns;loop++) {				
+				if(allPassPercent[position].equals("PASS"))
+					pass++;
+				position=position+properties.getNoOfTestcases();
+			}
+			testcasePassPercent[noOfResults]=pass/noOfRuns*100.0;			
+		}
+		return testcasePassPercent;
 	}
 	
 	
