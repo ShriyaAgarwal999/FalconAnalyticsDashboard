@@ -27,15 +27,16 @@ public class ProductTestCaseController {
 	//function to get data of last runs
 	@GetMapping("/details")
 	public List<TestcaseDetails> history(@RequestParam("customerName") String customerName, @RequestParam("noOfRuns") int noOfRuns){
-		int skip=1;
 		List<ProductTestCase> testcaseModel=testcaseRepo.findByCustomernameOrderByNumberDesc(customerName);
+		int countOfResults=testcaseRepo.findByCustomernameOrderByNumberDesc(customerName).size();
+		countOfResults=countOfResults/properties.getNoOfTestcases();
+		int skip=1;
 		Iterator<ProductTestCase> reports = testcaseModel.iterator();
 		ProductTestCase productTestCase;
-		//int temp=properties.getNoOfTestcases()-noOfRuns;
 		List<TestcaseDetails> listOfTestcase=new ArrayList<TestcaseDetails>();
 		while (reports.hasNext()){
 			productTestCase=reports.next();
-			if(skip>properties.getNoOfTestcases()-noOfRuns) {
+			if(skip>countOfResults-noOfRuns) {
 				TestcaseDetails testcaseDetails = new TestcaseDetails();
 				testcaseDetails.setName(productTestCase.getName());
 				testcaseDetails.setRunsessionid(productTestCase.getRunsessionid());
@@ -45,14 +46,13 @@ public class ProductTestCaseController {
 				listOfTestcase.add(testcaseDetails);	
 			}
 			skip++;
-			if(skip>properties.getNoOfTestcases())
+			if(skip>countOfResults)
 				skip=1;
 		}
-		System.out.println(listOfTestcase.toString());
 		return listOfTestcase;
 	}
 	
-	//function to get the comparision test case wise
+	//function to get the comparison test case wise
 	@GetMapping("/testcaseCompare")
 	public double[] testcaseCompare(@RequestParam("customerName") String customerName, @RequestParam("noOfRuns") int noOfRuns) {
 		List<ProductTestCase> testcaseModel=testcaseRepo.findByCustomernameOrderByRunsessionidDesc(customerName);
@@ -77,7 +77,7 @@ public class ProductTestCaseController {
 					pass++;
 				position=position+properties.getNoOfTestcases();
 			}
-			testcasePassPercent[noOfResults]=pass/noOfRuns*100.0;			
+			testcasePassPercent[noOfResults]=pass/noOfRuns*100.0;		
 		}
 		return testcasePassPercent;
 	}
