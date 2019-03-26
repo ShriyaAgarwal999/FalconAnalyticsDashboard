@@ -104,7 +104,6 @@ public class ProductTestReportController {
 			if(flag==-1)
 				productNames.add(productTestReport.getProductname());
 		}
-		System.out.println(productNames.toString());
 		return productNames;
 	}
 	
