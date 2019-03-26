@@ -8,9 +8,8 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface ProductTestCaseRepository extends MongoRepository<ProductTestCase, String>{
-
 	List<ProductTestCase> findByCustomername(String customerName);
 	List<ProductTestCase> findByCustomernameOrderByRunsessionidDesc(String customerName);
 	List<ProductTestCase> findByCustomernameOrderByNumberDesc(String customerName);
-
+	List<ProductTestCase> findByCustomernameOrderByNumberAsc(String customerName);
 }

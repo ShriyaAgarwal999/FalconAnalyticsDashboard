@@ -1,5 +1,6 @@
 package org.atmecs.falconanalytics.controller;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import org.atmecs.falconanalytics.dto.ProductTestIdPercent;
@@ -28,8 +29,7 @@ public class ProductTestReportController {
 	
 	//method to show the response based on the product test phase and test pass percentage 
 	@GetMapping("/get/{runSessionId}")
-	public ProductTestResponse result(@PathVariable("runSessionId")int runSessionId ) {
-		
+	public ProductTestResponse result(@PathVariable("runSessionId")int runSessionId ) {		
 		ProductTestReport testReportModel= testReportRepository.findByRunsessionid(runSessionId);
 		if(testReportModel.getTestphase().equals("Regression") && 
 				testReportModel.getPasspercentage()>properties.getRegressionPassPercent())
@@ -46,7 +46,6 @@ public class ProductTestReportController {
 	//method to return test pass percent array and corresponding run session id array for analytics purpose
 	@GetMapping("/getDetails")
 	public ProductTestIdPercent analysis(@RequestParam("productName") String productName,@RequestParam("noOfRuns") int noOfRuns ) {
-
 		List<ProductTestReport> testReportsDetails= testReportRepository.findByProductnameOrderByRunsessionidDesc(productName);
 		Iterator<ProductTestReport> reports = testReportsDetails.iterator();
 		int testPassPercent[]=new int[noOfRuns];
@@ -61,6 +60,52 @@ public class ProductTestReportController {
 			noOfRuns--;
 		}
 		return new ProductTestIdPercent(testPassPercent,testRunId);
+	}
+	
+	@GetMapping("/getTestphaseDetails")
+	public ProductTestIdPercent testPhase(@RequestParam("productName") String productName,@RequestParam("noOfRuns") int noOfRuns, @RequestParam("testphase") String testphase ) {
+		List<ProductTestReport> testReportsDetails= testReportRepository.findByProductnameOrderByRunsessionidDesc(productName);
+		Iterator<ProductTestReport> reports = testReportsDetails.iterator();
+		int testPassPercent[]=new int[noOfRuns];
+		int testRunId[]=new int[noOfRuns];
+		int position=0;
+		ProductTestReport productTestReport;
+		while (reports.hasNext() && noOfRuns>0) {
+			productTestReport=reports.next();
+			if(productTestReport.getTestphase().equals(testphase) && productTestReport.getRunsessionid()>0) {
+				testPassPercent[position]=productTestReport.getPasspercentage();
+				testRunId[position]=productTestReport.getRunsessionid();
+				position++;
+				noOfRuns--;
+			}
+			
+		}
+		return new ProductTestIdPercent(testPassPercent,testRunId);
+	}
+	
+	//API to get names of all the products
+	@GetMapping("/getAllProductNames")
+	public List<String> products() {
+		List<ProductTestReport> testReportsDetails= testReportRepository.findAll();
+		Iterator<ProductTestReport> reports = testReportsDetails.iterator();
+		ProductTestReport productTestReport;
+		int flag;
+		List<String> productNames=new ArrayList<String>();
+		while (reports.hasNext()) {
+			productTestReport=reports.next();
+			Iterator<String> names = productNames.iterator();
+			flag=-1;
+			while(names.hasNext()) {
+				if(productTestReport.getProductname().equals(names.next().toString())) {
+					flag=1;
+					break;
+				}
+			}
+			if(flag==-1)
+				productNames.add(productTestReport.getProductname());
+		}
+		System.out.println(productNames.toString());
+		return productNames;
 	}
 	
 }
