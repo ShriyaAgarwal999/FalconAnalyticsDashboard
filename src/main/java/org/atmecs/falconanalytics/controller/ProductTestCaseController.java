@@ -4,9 +4,11 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import org.atmecs.falconanalytics.dto.ProductTestCase;
+import org.atmecs.falconanalytics.dto.ProductTestReport;
 import org.atmecs.falconanalytics.dto.TestcaseDetails;
 import org.atmecs.falconanalytics.properties.TestReportProperties;
 import org.atmecs.falconanalytics.repositories.ProductTestCaseRepository;
+import org.atmecs.falconanalytics.repositories.ProductTestReportRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,6 +21,9 @@ public class ProductTestCaseController {
 
 	@Autowired
 	ProductTestCaseRepository testcaseRepo; 
+	
+	@Autowired
+	ProductTestReportRepository testReportRepository;
 	
 	@Autowired
 	TestReportProperties properties;
@@ -78,6 +83,34 @@ public class ProductTestCaseController {
 			testcasePassPercent[noOfResults]=pass/noOfRuns*100.0;
 		}
 		return testcasePassPercent;
+	}
+	
+	//API to get this test run details
+	@GetMapping("/getThisTestRunDetails")
+	public List<ProductTestCase> getThisTestRunDetails(@RequestParam("productName") String productName,
+			@RequestParam("testphase") String testphase,@RequestParam("runNumber") int runNumber, 
+			@RequestParam("browser") String browser, @RequestParam("os") String os, @RequestParam("status") String status) {
+		List<ProductTestReport> testReportsDetails= testReportRepository.findByProductnameAndTestphaseOrderByRunsessionidDesc
+				(productName,testphase);
+		int sessionId=testReportsDetails.get(runNumber-1).getRunsessionid();
+		List<ProductTestCase> testcaseModel;
+		if((browser.equals("All")) && (os.equals("All")) && (status.equals("All"))) 
+			testcaseModel=testcaseRepo.findByRunsessionidOrderByNumberAsc(sessionId);
+		else {
+			if((browser.equals("All")) && (os.equals("All")))
+				testcaseModel=testcaseRepo.findByRunsessionidAndStatusOrderByNumberAsc(sessionId, status);
+			else if(os.equals("All") && (status.equals("All")))
+				testcaseModel=testcaseRepo.findByRunsessionidAndBrowserOrderByNumberAsc(sessionId,browser);
+			else if(browser.equals("All") && status.equals("All"))
+				testcaseModel=testcaseRepo.findByRunsessionidAndOsOrderByNumberAsc(sessionId,os);
+			else if(browser.equals("All"))
+				testcaseModel=testcaseRepo.findByRunsessionidAndStatusAndOsOrderByNumberAsc(sessionId, status, os);
+			else if(os.equals("All"))
+				testcaseModel=testcaseRepo.findByRunsessionidAndStatusAndBrowserOrderByNumberAsc(sessionId, status, browser);
+			else 
+				testcaseModel=testcaseRepo.findByRunsessionidAndBrowserAndOsOrderByNumberAsc(sessionId, browser, os);
+		}
+		return testcaseModel;
 	}
 	
 }

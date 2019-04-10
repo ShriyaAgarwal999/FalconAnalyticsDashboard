@@ -11,5 +11,6 @@ public interface ProductTestReportRepository extends MongoRepository<ProductTest
 
 	ProductTestReport findByRunsessionid(int id);
 	List<ProductTestReport> findByProductnameOrderByRunsessionidDesc(String productName);
-	List<ProductTestReport> findByProductnameOrderByRunsessionidAsc(String productName);
+	//List<ProductTestReport> findByProductnameOrderByRunsessionidAsc(String productName);
+	List<ProductTestReport> findByProductnameAndTestphaseOrderByRunsessionidDesc(String productName, String testphase);
 }

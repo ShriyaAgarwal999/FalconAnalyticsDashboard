@@ -3,14 +3,14 @@ package org.atmecs.falconanalytics.controller;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import org.atmecs.falconanalytics.dto.ProductTestIdPercent;
+
+//import org.atmecs.falconanalytics.dto.ProductTestIdPercent;
 import org.atmecs.falconanalytics.dto.ProductTestReport;
-import org.atmecs.falconanalytics.dto.ProductTestResponse;
+import org.atmecs.falconanalytics.dto.TestRunDetails;
 import org.atmecs.falconanalytics.properties.TestReportProperties;
 import org.atmecs.falconanalytics.repositories.ProductTestReportRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -27,61 +27,111 @@ public class ProductTestReportController {
 	@Autowired
 	TestReportProperties properties; 
 	
-	//method to show the response based on the product test phase and test pass percentage 
-	@GetMapping("/get/{runSessionId}")
-	public ProductTestResponse result(@PathVariable("runSessionId")int runSessionId ) {		
-		ProductTestReport testReportModel= testReportRepository.findByRunsessionid(runSessionId);
-		if(testReportModel.getTestphase().equals("Regression") && 
-				testReportModel.getPasspercentage()>properties.getRegressionPassPercent())
-			return new ProductTestResponse(properties.getGoMessage(),testReportModel.getTestphase(),
-					testReportModel.getPasspercentage());
-		else if(testReportModel.getTestphase().equals("Smoke") && 
-				testReportModel.getPasspercentage()==properties.getSmokePassPercent())
-			return new ProductTestResponse(properties.getGoMessage(),testReportModel.getTestphase(),
-					testReportModel.getPasspercentage());
-		return new ProductTestResponse(properties.getNoMessage(),testReportModel.getTestphase(),
-				testReportModel.getPasspercentage());
-	}
+//	//method to return test pass percent array and corresponding run session id array for analytics purpose
+//	@GetMapping("/getDetails")
+//	public ProductTestIdPercent analysis(@RequestParam("productName") String productName,@RequestParam("noOfRuns") int noOfRuns ) {
+//		List<ProductTestReport> testReportsDetails= testReportRepository.findByProductnameOrderByRunsessionidDesc(productName);
+//		Iterator<ProductTestReport> reports = testReportsDetails.iterator();
+//		int testPassPercent[]=new int[noOfRuns];
+//		int testRunId[]=new int[noOfRuns];
+//		int position=0;
+//		ProductTestReport productTestReport;
+//		while (reports.hasNext() && noOfRuns>0) {
+//			productTestReport=reports.next();
+//			testPassPercent[position]=productTestReport.getPasspercentage();
+//			testRunId[position]=productTestReport.getRunsessionid();
+//			position++;
+//			noOfRuns--;
+//		}
+//		return new ProductTestIdPercent(testPassPercent,testRunId);
+//	}
 	
-	//method to return test pass percent array and corresponding run session id array for analytics purpose
-	@GetMapping("/getDetails")
-	public ProductTestIdPercent analysis(@RequestParam("productName") String productName,@RequestParam("noOfRuns") int noOfRuns ) {
-		List<ProductTestReport> testReportsDetails= testReportRepository.findByProductnameOrderByRunsessionidDesc(productName);
-		Iterator<ProductTestReport> reports = testReportsDetails.iterator();
-		int testPassPercent[]=new int[noOfRuns];
-		int testRunId[]=new int[noOfRuns];
-		int position=0;
-		ProductTestReport productTestReport;
-		while (reports.hasNext() && noOfRuns>0) {
-			productTestReport=reports.next();
-			testPassPercent[position]=productTestReport.getPasspercentage();
-			testRunId[position]=productTestReport.getRunsessionid();
-			position++;
-			noOfRuns--;
-		}
-		return new ProductTestIdPercent(testPassPercent,testRunId);
-	}
+	//get pass percentage based on testphase
+//	@GetMapping("/getTestphaseDetails")
+//	public ProductTestIdPercent testPhase(@RequestParam("productName") String productName,@RequestParam("noOfRuns") int noOfRuns, @RequestParam("testphase") String testphase ) {
+//		List<ProductTestReport> testReportsDetails= testReportRepository.findByProductnameOrderByRunsessionidDesc(productName);
+//		Iterator<ProductTestReport> reports = testReportsDetails.iterator();
+//		int testPassPercent[]=new int[noOfRuns];
+//		int testRunId[]=new int[noOfRuns];
+//		int position=0;
+//		ProductTestReport productTestReport;
+//		while (reports.hasNext() && noOfRuns>0) {
+//			productTestReport=reports.next();
+//			System.out.println(productTestReport.getRunsessionid()+" "+productTestReport.getTestphase());
+//			if(productTestReport.getTestphase().equals(testphase) && productTestReport.getRunsessionid()>0) {
+//				testPassPercent[position]=productTestReport.getPasspercentage();
+//				testRunId[position]=productTestReport.getRunsessionid();
+////				System.out.println(testPassPercent[position]);
+////				System.out.println(noOfRuns);
+//				position++;
+//				noOfRuns--;
+//			}
+//			
+//		}
+//		return new ProductTestIdPercent(testPassPercent,testRunId);
+//	}
 	
-	@GetMapping("/getTestphaseDetails")
-	public ProductTestIdPercent testPhase(@RequestParam("productName") String productName,@RequestParam("noOfRuns") int noOfRuns, @RequestParam("testphase") String testphase ) {
-		List<ProductTestReport> testReportsDetails= testReportRepository.findByProductnameOrderByRunsessionidDesc(productName);
-		Iterator<ProductTestReport> reports = testReportsDetails.iterator();
-		int testPassPercent[]=new int[noOfRuns];
-		int testRunId[]=new int[noOfRuns];
-		int position=0;
-		ProductTestReport productTestReport;
-		while (reports.hasNext() && noOfRuns>0) {
-			productTestReport=reports.next();
-			if(productTestReport.getTestphase().equals(testphase) && productTestReport.getRunsessionid()>0) {
-				testPassPercent[position]=productTestReport.getPasspercentage();
-				testRunId[position]=productTestReport.getRunsessionid();
-				position++;
+//	//Api to get no of testcases and its details from each testrun
+//	@GetMapping("/getTestRunDetails")
+//	public TestRunDetails testRunDetails(@RequestParam("productName") String productName,@RequestParam("noOfRuns") int noOfRuns, @RequestParam("testphase") String testphase) {
+//		List<ProductTestReport> testReportsDetails= testReportRepository.findByProductnameOrderByRunsessionidDesc(productName);
+//		Iterator<ProductTestReport> reports = testReportsDetails.iterator();
+//		List<Integer> totalcount=new ArrayList<Integer>();
+//		List<Integer> passcount=new ArrayList<Integer>();
+//		List<Integer> failcount=new ArrayList<Integer>();
+//		List<Integer> skipcount=new ArrayList<Integer>();
+//		List<Integer> passPercent=new ArrayList<Integer>();
+//		ProductTestReport productTestReport;
+//		TestRunDetails testrun=new TestRunDetails();
+//		while (reports.hasNext() && noOfRuns>0) {
+//			productTestReport=reports.next();if(productTestReport.getTestphase().equals(testphase)) {
+//				totalcount.add(productTestReport.getTotalcount());
+//				passcount.add(productTestReport.getPasscount());
+//				failcount.add(productTestReport.getFailcount());
+//				skipcount.add(productTestReport.getSkipcount());
+//				passPercent.add(productTestReport.getPasspercentage());
+//				noOfRuns--;
+//			}
+//		}
+//		testrun.setTotalcount(totalcount);
+//		testrun.setPasscount(passcount);
+//		testrun.setFailcount(failcount);
+//		testrun.setSkipcount(skipcount);
+//		testrun.setPassPercent(passPercent);
+//		return testrun;
+//	}
+	
+	//Api to get no of testcases and its details from each testrun
+		@GetMapping("/getTestRunDetails")
+		public TestRunDetails testRunDetails(@RequestParam("productName") String productName,@RequestParam("noOfRuns") int noOfRuns,
+				@RequestParam("testphase") String testphase) {
+			List<ProductTestReport> testReportsDetails= testReportRepository.findByProductnameAndTestphaseOrderByRunsessionidDesc
+					(productName,testphase);
+			Iterator<ProductTestReport> reports = testReportsDetails.iterator();
+			List<Integer> totalcount=new ArrayList<Integer>();
+			List<Integer> passcount=new ArrayList<Integer>();
+			List<Integer> failcount=new ArrayList<Integer>();
+			List<Integer> skipcount=new ArrayList<Integer>();
+			List<Integer> passPercent=new ArrayList<Integer>();
+			ProductTestReport productTestReport;
+			TestRunDetails testrun=new TestRunDetails();
+			testrun.setTotalRuns(testReportsDetails.size());
+			while (reports.hasNext() && noOfRuns>0) {
+				productTestReport=reports.next();
+				totalcount.add(productTestReport.getTotalcount());
+				passcount.add(productTestReport.getPasscount());
+				failcount.add(productTestReport.getFailcount());
+				skipcount.add(productTestReport.getSkipcount());
+				passPercent.add(productTestReport.getPasspercentage());
 				noOfRuns--;
 			}
-			
+			testrun.setTotalcount(totalcount);
+			testrun.setPasscount(passcount);
+			testrun.setFailcount(failcount);
+			testrun.setSkipcount(skipcount);
+			testrun.setPassPercent(passPercent);
+			return testrun;
 		}
-		return new ProductTestIdPercent(testPassPercent,testRunId);
-	}
 	
 	//API to get names of all the products
 	@GetMapping("/getAllProductNames")
@@ -103,8 +153,11 @@ public class ProductTestReportController {
 			}
 			if(flag==-1)
 				productNames.add(productTestReport.getProductname());
-		}
+			}		
 		return productNames;
 	}
+	
+	
+	
 	
 }
